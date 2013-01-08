@@ -35,6 +35,7 @@ func NewAWSSeeker() AWSSeeker {
 	if err != nil {
 		panic(err.Error())
 	}
+	// receive region?
 	return AWSSeeker{
 		ELB: elb.New(auth, aws.USEast),
 	}
@@ -56,12 +57,12 @@ func (aws AWSSeeker) DescribeInstancesHealth(lb string) ([]Instance, error) {
 }
 
 func (aws AWSSeeker) DescribeLoadBalancers() ([]LoadBalancer, error) {
-	lbResp, err := aws.ELB.DescribeLoadBalancers()
+	resp, err := aws.ELB.DescribeLoadBalancers()
 	if err != nil {
 		return nil, err
 	}
 	lbs := []LoadBalancer{}
-	for _, lbDesc := range lbResp.LoadBalancerDescriptions {
+	for _, lbDesc := range resp.LoadBalancerDescriptions {
 		lb := LoadBalancer{
 			AvailZones: lbDesc.AvailZones,
 			Name:       lbDesc.LoadBalancerName,
