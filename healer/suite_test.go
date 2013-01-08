@@ -13,6 +13,7 @@ func Test(t *testing.T) { TestingT(t) }
 type S struct {
 	srv    *elbtest.Server
 	seeker Seeker
+	instId string
 }
 
 var _ = Suite(&S{})
@@ -22,6 +23,8 @@ func (s *S) SetUpSuite(c *C) {
 	s.srv, err = elbtest.NewServer()
 	c.Assert(err, IsNil)
 	s.srv.NewLoadBalancer("testlb")
+	s.instId = s.srv.NewInstance()
+	s.srv.RegisterInstance(s.instId, "testlb")
 	s.seeker = AWSSeeker{
 		ELB: elb.New(aws.Auth{AccessKey: "auth", SecretKey: "s3cr3t"}, aws.Region{ELBEndpoint: s.srv.URL()}),
 	}

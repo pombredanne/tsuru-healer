@@ -8,7 +8,7 @@ import (
 // Seeker is responsible to seek for unhealthy instances
 // under a Load Balancer
 type Seeker interface {
-	DescribeInstancesHealth() ([]Instance, error)
+	DescribeInstancesHealth(lb string) ([]Instance, error)
 	DescribeLoadBalancers() ([]LoadBalancer, error)
 }
 
@@ -40,8 +40,19 @@ func NewAWSSeeker() AWSSeeker {
 	}
 }
 
-func (aws AWSSeeker) DescribeInstancesHealth() ([]Instance, error) {
-	return nil, nil
+func (aws AWSSeeker) DescribeInstancesHealth(lb string) ([]Instance, error) {
+	resp, err := aws.ELB.DescribeInstanceHealth(lb)
+	if err != nil {
+		return nil, err
+	}
+	instances := make([]Instance, len(resp.InstanceStates))
+	for i, state := range resp.InstanceStates {
+		instances[i].InstanceId = state.InstanceId
+		instances[i].Description = state.Description
+		instances[i].ReasonCode = state.ReasonCode
+		instances[i].State = state.State
+	}
+	return instances, nil
 }
 
 func (aws AWSSeeker) DescribeLoadBalancers() ([]LoadBalancer, error) {
@@ -54,6 +65,7 @@ func (aws AWSSeeker) DescribeLoadBalancers() ([]LoadBalancer, error) {
 		lb := LoadBalancer{
 			AvailZones: lbDesc.AvailZones,
 			Name:       lbDesc.LoadBalancerName,
+			DNSName:    lbDesc.DNSName,
 		}
 		instances := make([]Instance, len(lbDesc.Instances))
 		for i, instance := range lbDesc.Instances {
