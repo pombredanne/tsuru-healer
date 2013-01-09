@@ -1,6 +1,7 @@
 package healer
 
 import (
+	"github.com/flaviamissi/go-elb/elb"
 	. "launchpad.net/gocheck"
 )
 
@@ -20,4 +21,25 @@ func (s *S) TestDescribeInstancesHealth(c *C) {
 	c.Assert(instances[0].Description, Not(Equals), "")
 	c.Assert(instances[0].ReasonCode, Not(Equals), "")
 	c.Assert(instances[0].State, Not(Equals), "")
+}
+
+func (s *S) TestSeekUnhealthyInstances(c *C) {
+	state := elb.InstanceState{
+		Description: "Instance has failed at least the UnhealthyThreshold number of health checks consecutively",
+		State:       "OutOfService",
+		ReasonCode:  "Instance",
+		InstanceId:  s.instId,
+	}
+	s.srv.ChangeInstanceState("testlb", state)
+	instances, err := s.seeker.SeekUnhealthyInstances()
+	c.Assert(err, IsNil)
+	expected := []Instance{
+		{
+			Description: "Instance has failed at least the UnhealthyThreshold number of health checks consecutively",
+			State:       "OutOfService",
+			ReasonCode:  "Instance",
+			InstanceId:  s.instId,
+		},
+	}
+	c.Assert(instances, DeepEquals, expected)
 }
