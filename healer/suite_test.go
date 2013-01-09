@@ -25,7 +25,7 @@ func (s *S) SetUpSuite(c *C) {
 	s.srv.NewLoadBalancer("testlb")
 	s.instId = s.srv.NewInstance()
 	s.srv.RegisterInstance(s.instId, "testlb")
-	s.seeker = AWSSeeker{
+	s.seeker = &AWSSeeker{
 		ELB: elb.New(aws.Auth{AccessKey: "auth", SecretKey: "s3cr3t"}, aws.Region{ELBEndpoint: s.srv.URL()}),
 	}
 }

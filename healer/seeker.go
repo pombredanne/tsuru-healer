@@ -32,18 +32,18 @@ type AWSSeeker struct {
 	ELB *elb.ELB
 }
 
-func NewAWSSeeker() AWSSeeker {
+func NewAWSSeeker() *AWSSeeker {
 	auth, err := aws.EnvAuth()
 	if err != nil {
 		panic(err.Error())
 	}
 	// receive region?
-	return AWSSeeker{
+	return &AWSSeeker{
 		ELB: elb.New(auth, aws.USEast),
 	}
 }
 
-func (aws AWSSeeker) matchCriteria(instances []Instance, model Instance) []Instance {
+func (aws *AWSSeeker) matchCriteria(instances []Instance, model Instance) []Instance {
 	matches := []Instance{}
 	for _, instance := range instances {
 		if instance.Description == model.Description && instance.State == model.State &&
@@ -54,7 +54,7 @@ func (aws AWSSeeker) matchCriteria(instances []Instance, model Instance) []Insta
 	return matches
 }
 
-func (aws AWSSeeker) SeekUnhealthyInstances() ([]Instance, error) {
+func (aws *AWSSeeker) SeekUnhealthyInstances() ([]Instance, error) {
 	lbs, err := aws.DescribeLoadBalancers()
 	if err != nil {
 		return nil, err
@@ -75,7 +75,7 @@ func (aws AWSSeeker) SeekUnhealthyInstances() ([]Instance, error) {
 	return unhealthy, nil
 }
 
-func (aws AWSSeeker) DescribeInstancesHealth(lb string) ([]Instance, error) {
+func (aws *AWSSeeker) DescribeInstancesHealth(lb string) ([]Instance, error) {
 	resp, err := aws.ELB.DescribeInstanceHealth(lb)
 	if err != nil {
 		return nil, err
@@ -91,7 +91,7 @@ func (aws AWSSeeker) DescribeInstancesHealth(lb string) ([]Instance, error) {
 	return instances, nil
 }
 
-func (aws AWSSeeker) DescribeLoadBalancers() ([]LoadBalancer, error) {
+func (aws *AWSSeeker) DescribeLoadBalancers() ([]LoadBalancer, error) {
 	resp, err := aws.ELB.DescribeLoadBalancers()
 	if err != nil {
 		return nil, err
