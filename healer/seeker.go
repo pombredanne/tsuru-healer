@@ -43,7 +43,7 @@ func NewAWSSeeker() *AWSSeeker {
 	}
 }
 
-func (aws *AWSSeeker) matchCriteria(instances []Instance, model Instance) []Instance {
+func (s *AWSSeeker) matchCriteria(instances []Instance, model Instance) []Instance {
 	matches := []Instance{}
 	for _, instance := range instances {
 		if instance.Description == model.Description && instance.State == model.State &&
@@ -54,14 +54,14 @@ func (aws *AWSSeeker) matchCriteria(instances []Instance, model Instance) []Inst
 	return matches
 }
 
-func (aws *AWSSeeker) SeekUnhealthyInstances() ([]Instance, error) {
-	lbs, err := aws.DescribeLoadBalancers()
+func (s *AWSSeeker) SeekUnhealthyInstances() ([]Instance, error) {
+	lbs, err := s.DescribeLoadBalancers()
 	if err != nil {
 		return nil, err
 	}
 	unhealthy := []Instance{}
 	for _, lb := range lbs {
-		instances, err := aws.DescribeInstancesHealth(lb.Name)
+		instances, err := s.DescribeInstancesHealth(lb.Name)
 		if err != nil {
 			return nil, err
 		}
@@ -70,13 +70,13 @@ func (aws *AWSSeeker) SeekUnhealthyInstances() ([]Instance, error) {
 			State:       "OutOfService",
 			ReasonCode:  "Instance",
 		}
-		unhealthy = append(unhealthy, aws.matchCriteria(instances, model)...)
+		unhealthy = append(unhealthy, s.matchCriteria(instances, model)...)
 	}
 	return unhealthy, nil
 }
 
-func (aws *AWSSeeker) DescribeInstancesHealth(lb string) ([]Instance, error) {
-	resp, err := aws.ELB.DescribeInstanceHealth(lb)
+func (s *AWSSeeker) DescribeInstancesHealth(lb string) ([]Instance, error) {
+	resp, err := s.ELB.DescribeInstanceHealth(lb)
 	if err != nil {
 		return nil, err
 	}
@@ -91,8 +91,8 @@ func (aws *AWSSeeker) DescribeInstancesHealth(lb string) ([]Instance, error) {
 	return instances, nil
 }
 
-func (aws *AWSSeeker) DescribeLoadBalancers() ([]LoadBalancer, error) {
-	resp, err := aws.ELB.DescribeLoadBalancers()
+func (s *AWSSeeker) DescribeLoadBalancers() ([]LoadBalancer, error) {
+	resp, err := s.ELB.DescribeLoadBalancers()
 	if err != nil {
 		return nil, err
 	}
