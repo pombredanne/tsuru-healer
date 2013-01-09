@@ -31,7 +31,7 @@ func (s *S) TestSeekUnhealthyInstances(c *C) {
 		ReasonCode:  "Instance",
 		InstanceId:  s.instId,
 	}
-	s.srv.ChangeInstanceState("testlb", state)
+	s.elbsrv.ChangeInstanceState("testlb", state)
 	instances, err := s.seeker.SeekUnhealthyInstances()
 	c.Assert(err, IsNil)
 	expected := []Instance{

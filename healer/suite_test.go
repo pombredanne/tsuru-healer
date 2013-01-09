@@ -2,8 +2,6 @@ package healer
 
 import (
 	"github.com/flaviamissi/go-elb/aws"
-	"github.com/flaviamissi/go-elb/ec2"
-	"github.com/flaviamissi/go-elb/ec2/ec2test"
 	"github.com/flaviamissi/go-elb/elb"
 	"github.com/flaviamissi/go-elb/elb/elbtest"
 	. "launchpad.net/gocheck"
@@ -14,7 +12,6 @@ func Test(t *testing.T) { TestingT(t) }
 
 type S struct {
 	elbsrv *elbtest.Server
-	ec2srv *ec2test.Server
 	seeker Seeker
 	healer Healer
 	instId string
@@ -24,17 +21,7 @@ var _ = Suite(&S{})
 
 func (s *S) SetUpSuite(c *C) {
 	s.setUpELB(c)
-	s.setUpEC2(c)
-}
-
-func (s *S) setUpEC2(c *C) {
-	var err error
-	s.ec2srv, err = ec2test.NewServer()
-	c.Assert(err, IsNil)
-	s.healer = &AWSHealer{
-		ELB: elb.New(aws.Auth{AccessKey: "auth", SecretKey: "s3cr3t"}, aws.Region{ELBEndpoint: s.elbsrv.URL()}),
-		EC2: ec2.New(aws.Auth{AccessKey: "auth", SecretKey: "s3cr3t"}, aws.Region{EC2Endpoint: s.ec2srv.URL()}),
-	}
+    s.healer = &TsuruHealer{}
 }
 
 func (s *S) setUpELB(c *C) {
