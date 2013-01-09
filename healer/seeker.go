@@ -14,10 +14,11 @@ type Seeker interface {
 }
 
 type Instance struct {
-	InstanceId  string
-	Description string
-	ReasonCode  string
-	State       string
+	InstanceId   string
+	Description  string
+	ReasonCode   string
+	State        string
+	LoadBalancer string
 }
 
 type LoadBalancer struct {
@@ -85,6 +86,7 @@ func (aws AWSSeeker) DescribeInstancesHealth(lb string) ([]Instance, error) {
 		instances[i].Description = state.Description
 		instances[i].ReasonCode = state.ReasonCode
 		instances[i].State = state.State
+		instances[i].LoadBalancer = lb
 	}
 	return instances, nil
 }

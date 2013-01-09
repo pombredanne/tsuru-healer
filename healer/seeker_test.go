@@ -21,6 +21,7 @@ func (s *S) TestDescribeInstancesHealth(c *C) {
 	c.Assert(instances[0].Description, Not(Equals), "")
 	c.Assert(instances[0].ReasonCode, Not(Equals), "")
 	c.Assert(instances[0].State, Not(Equals), "")
+	c.Assert(instances[0].LoadBalancer, Equals, "testlb")
 }
 
 func (s *S) TestSeekUnhealthyInstances(c *C) {
@@ -35,10 +36,11 @@ func (s *S) TestSeekUnhealthyInstances(c *C) {
 	c.Assert(err, IsNil)
 	expected := []Instance{
 		{
-			Description: "Instance has failed at least the UnhealthyThreshold number of health checks consecutively",
-			State:       "OutOfService",
-			ReasonCode:  "Instance",
-			InstanceId:  s.instId,
+			Description:  "Instance has failed at least the UnhealthyThreshold number of health checks consecutively",
+			State:        "OutOfService",
+			ReasonCode:   "Instance",
+			InstanceId:   s.instId,
+			LoadBalancer: "testlb",
 		},
 	}
 	c.Assert(instances, DeepEquals, expected)
