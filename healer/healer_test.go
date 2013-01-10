@@ -1,6 +1,8 @@
 package healer
 
 import (
+	"github.com/flaviamissi/go-elb/aws"
+	"github.com/flaviamissi/go-elb/elb"
 	. "launchpad.net/gocheck"
 	"net/http"
 	"net/http/httptest"
@@ -45,4 +47,31 @@ func (s *S) TestTerminate(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(req.URL.String(), Equals, "/apps/testlb/units")
 	c.Assert(req.Method, Equals, "DELETE")
+}
+
+func (s *S) TestHealer(c *C) {
+	reqs := []*http.Request{}
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		reqs = append(reqs, r)
+		w.Write([]byte(""))
+	}))
+	defer ts.Close()
+	s.healer.seeker = &AWSSeeker{
+		ELB: elb.New(aws.Auth{AccessKey: "auth", SecretKey: "s3cr3t"}, aws.Region{ELBEndpoint: s.elbsrv.URL()}),
+	}
+	s.healer.Endpoint = ts.URL
+	state := elb.InstanceState{
+		Description: "Instance has failed at least the UnhealthyThreshold number of health checks consecutively",
+		State:       "OutOfService",
+		ReasonCode:  "Instance",
+		InstanceId:  s.instId,
+	}
+	s.elbsrv.ChangeInstanceState("testlb", state)
+	err := s.healer.Heal()
+	c.Assert(err, IsNil)
+	c.Assert(len(reqs), Equals, 2)
+	c.Assert(reqs[0].URL.String(), Equals, "/apps/testlb/units")
+	c.Assert(reqs[0].Method, Equals, "DELETE")
+	c.Assert(reqs[1].URL.String(), Equals, "/apps/testlb/units")
+	c.Assert(reqs[1].Method, Equals, "PUT")
 }

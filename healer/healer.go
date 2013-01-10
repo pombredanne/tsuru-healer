@@ -18,27 +18,26 @@ type Healer interface {
 
 type TsuruHealer struct {
 	Endpoint string
+	seeker   Seeker
 }
 
 // Heal iterates through down instances, terminate then
 // and spawn new ones to replace the terminated.
 func (h *TsuruHealer) Heal() error {
-	// instances, err := h.seeker.SeekUnhealthyInstances()
-	// if err != nil {
-	//     return err
-	// }
-	// for _, instance := range instances {
-	//     err := h.Terminate(instance.Id)
-	//     if err != nil {
-	//         // should really stop here?
-	//         return err
-	//     }
-	//     err := h.Spawn(instance)
-	//     if err != nil {
-	//         // should really stop here?
-	//         return err
-	//     }
-	// }
+	instances, err := h.seeker.SeekUnhealthyInstances()
+	if err != nil {
+		return err
+	}
+	for _, instance := range instances {
+		if err := h.Terminate(instance.LoadBalancer, instance.InstanceId); err != nil {
+			// should really stop here?
+			return err
+		}
+		if err := h.Spawn(instance.LoadBalancer); err != nil {
+			// should really stop here?
+			return err
+		}
+	}
 	return nil
 }
 
@@ -108,5 +107,8 @@ func request(method, url string, body io.Reader) (*http.Response, error) {
 
 func NewTsuruHealer(email, password, endpoint string) *TsuruHealer {
 	getToken(email, password, endpoint)
-	return &TsuruHealer{Endpoint: endpoint}
+	return &TsuruHealer{
+		seeker:   NewAWSSeeker(),
+		Endpoint: endpoint,
+	}
 }
