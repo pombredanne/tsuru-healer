@@ -38,15 +38,16 @@ def send():
     put(os.path.join(current_dir, "dist.tar.gz"), env.healer_path)
 
 
-def start():
+def start(email, password, endpoint):
     with cd(env.healer_path):
         run("tar -xzf dist.tar.gz")
-    run("nohup %s/dist/healer >& ./tsuru-healer.out &" % env.healer_path, pty=False)
+    cmd = "nohup {0}/dist/healer {1} {2} {3} >& ./tsuru-healer.out &".format(env.healer_path, email, password, endpoint)
+    run(cmd, pty=False)
 
 
-def deploy():
+def deploy(email, password, endpoint):
     build()
     send()
     stop()
-    start()
+    start(email, password, endpoint)
     clean()
