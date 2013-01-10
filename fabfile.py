@@ -8,7 +8,7 @@ import os
 from fabric.api import abort, cd, env, local, put, run, settings
 
 current_dir = os.path.abspath(os.path.dirname(__file__))
-env.user = 'git'
+env.user = 'ubuntu'
 env.healer_path = '/home/%s/tsuru-healer' % env.user
 
 
