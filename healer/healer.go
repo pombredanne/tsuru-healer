@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 )
@@ -12,7 +13,7 @@ import (
 type Healer interface {
 	Heal() error
 	Spawn(lb string) error
-	Terminate(id string) error
+	Terminate(lb, id string) error
 }
 
 type TsuruHealer struct {
@@ -69,7 +70,7 @@ func getToken(email, password, endpoint string) (string, error) {
 func (h *TsuruHealer) Spawn(lb string) error {
 	url := fmt.Sprintf("%s/apps/%s/units", h.Endpoint, lb)
 	body := bytes.NewBufferString("1")
-	resp, err := http.Post(url, "text/plain", body)
+	resp, err := request("PUT", url, body)
 	if err != nil {
 		return err
 	}
@@ -80,8 +81,29 @@ func (h *TsuruHealer) Spawn(lb string) error {
 }
 
 // Calls tsuru remove-unit endpoint
-func (h *TsuruHealer) Terminate(id string) error {
+func (h *TsuruHealer) Terminate(lb, id string) error {
+	url := fmt.Sprintf("%s/apps/%s/units", h.Endpoint, lb)
+	body := bytes.NewBufferString("1")
+	resp, err := request("DELETE", url, body)
+	if err != nil {
+		return err
+	}
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("Error terminating unit: %s", resp.Status)
+	}
 	return nil
+}
+
+func request(method, url string, body io.Reader) (*http.Response, error) {
+	request, err := http.NewRequest(method, url, body)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := (&http.Client{}).Do(request)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
 }
 
 func NewTsuruHealer(email, password, endpoint string) *TsuruHealer {

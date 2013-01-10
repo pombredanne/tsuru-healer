@@ -30,4 +30,19 @@ func (s *S) TestSpawn(c *C) {
 	err := s.healer.Spawn("testlb")
 	c.Assert(err, IsNil)
 	c.Assert(req.URL.String(), Equals, "/apps/testlb/units")
+	c.Assert(req.Method, Equals, "PUT")
+}
+
+func (s *S) TestTerminate(c *C) {
+	var req *http.Request
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		req = r
+		w.Write([]byte(""))
+	}))
+	defer ts.Close()
+	s.healer.Endpoint = ts.URL
+	err := s.healer.Terminate("testlb", "i-123")
+	c.Assert(err, IsNil)
+	c.Assert(req.URL.String(), Equals, "/apps/testlb/units")
+	c.Assert(req.Method, Equals, "DELETE")
 }
