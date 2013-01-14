@@ -26,7 +26,7 @@ func (s *S) TestDescribeInstancesHealth(c *C) {
 
 func (s *S) TestSeekUnhealthyInstances(c *C) {
 	state := elb.InstanceState{
-		Description: "Instance has failed at least the UnhealthyThreshold number of health checks consecutively",
+		Description: "Instance has failed at least the UnhealthyThreshold number of health checks consecutively.",
 		State:       "OutOfService",
 		ReasonCode:  "Instance",
 		InstanceId:  s.instId,
@@ -36,7 +36,7 @@ func (s *S) TestSeekUnhealthyInstances(c *C) {
 	c.Assert(err, IsNil)
 	expected := []Instance{
 		{
-			Description:  "Instance has failed at least the UnhealthyThreshold number of health checks consecutively",
+			Description:  "Instance has failed at least the UnhealthyThreshold number of health checks consecutively.",
 			State:        "OutOfService",
 			ReasonCode:   "Instance",
 			InstanceId:   s.instId,

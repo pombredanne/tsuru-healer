@@ -61,7 +61,7 @@ func (s *S) TestHealer(c *C) {
 	}
 	s.healer.Endpoint = ts.URL
 	state := elb.InstanceState{
-		Description: "Instance has failed at least the UnhealthyThreshold number of health checks consecutively",
+		Description: "Instance has failed at least the UnhealthyThreshold number of health checks consecutively.",
 		State:       "OutOfService",
 		ReasonCode:  "Instance",
 		InstanceId:  s.instId,

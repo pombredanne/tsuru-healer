@@ -68,7 +68,7 @@ func (s *AWSSeeker) SeekUnhealthyInstances() ([]Instance, error) {
 			return nil, err
 		}
 		model := Instance{
-			Description: "Instance has failed at least the UnhealthyThreshold number of health checks consecutively",
+			Description: "Instance has failed at least the UnhealthyThreshold number of health checks consecutively.",
 			State:       "OutOfService",
 			ReasonCode:  "Instance",
 		}
