@@ -20,6 +20,7 @@ type Healer interface {
 type TsuruHealer struct {
 	Endpoint string
 	seeker   Seeker
+	token    string
 }
 
 var log *syslog.Writer
@@ -81,7 +82,7 @@ func getToken(email, password, endpoint string) (string, error) {
 func (h *TsuruHealer) Spawn(lb string) error {
 	url := fmt.Sprintf("%s/apps/%s/units", h.Endpoint, lb)
 	body := bytes.NewBufferString("1")
-	resp, err := request("PUT", url, body)
+	resp, err := request("PUT", url, h.token, body)
 	if err != nil {
 		return err
 	}
@@ -95,7 +96,7 @@ func (h *TsuruHealer) Spawn(lb string) error {
 func (h *TsuruHealer) Terminate(lb, id string) error {
 	url := fmt.Sprintf("%s/apps/%s/units", h.Endpoint, lb)
 	body := bytes.NewBufferString("1")
-	resp, err := request("DELETE", url, body)
+	resp, err := request("DELETE", url, h.token, body)
 	if err != nil {
 		return err
 	}
@@ -105,11 +106,12 @@ func (h *TsuruHealer) Terminate(lb, id string) error {
 	return nil
 }
 
-func request(method, url string, body io.Reader) (*http.Response, error) {
+func request(method, url, token string, body io.Reader) (*http.Response, error) {
 	request, err := http.NewRequest(method, url, body)
 	if err != nil {
 		return nil, err
 	}
+	request.Header.Add("Authorization", token)
 	resp, err := (&http.Client{}).Do(request)
 	if err != nil {
 		return nil, err
@@ -118,9 +120,13 @@ func request(method, url string, body io.Reader) (*http.Response, error) {
 }
 
 func NewTsuruHealer(email, password, endpoint string) *TsuruHealer {
-	getToken(email, password, endpoint)
+	token, err := getToken(email, password, endpoint)
+	if err != nil {
+		panic(err.Error())
+	}
 	return &TsuruHealer{
 		seeker:   NewAWSSeeker(),
 		Endpoint: endpoint,
+		token:    token,
 	}
 }

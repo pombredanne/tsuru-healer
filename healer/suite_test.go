@@ -15,13 +15,15 @@ type S struct {
 	seeker Seeker
 	healer *TsuruHealer
 	instId string
+	token  string
 }
 
 var _ = Suite(&S{})
 
 func (s *S) SetUpSuite(c *C) {
 	s.setUpELB(c)
-	s.healer = &TsuruHealer{}
+	s.token = "123456"
+	s.healer = &TsuruHealer{token: s.token}
 }
 
 func (s *S) setUpELB(c *C) {

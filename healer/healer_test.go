@@ -53,7 +53,7 @@ func (s *S) TestHealer(c *C) {
 	reqs := []*http.Request{}
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		reqs = append(reqs, r)
-		w.Write([]byte(""))
+		w.Write([]byte("123"))
 	}))
 	defer ts.Close()
 	s.healer.seeker = &AWSSeeker{
@@ -72,6 +72,8 @@ func (s *S) TestHealer(c *C) {
 	c.Assert(len(reqs), Equals, 2)
 	c.Assert(reqs[0].URL.String(), Equals, "/apps/testlb/units")
 	c.Assert(reqs[0].Method, Equals, "DELETE")
+	c.Assert(reqs[0].Header.Get("Authorization"), Equals, s.token)
 	c.Assert(reqs[1].URL.String(), Equals, "/apps/testlb/units")
 	c.Assert(reqs[1].Method, Equals, "PUT")
+	c.Assert(reqs[1].Header.Get("Authorization"), Equals, s.token)
 }
