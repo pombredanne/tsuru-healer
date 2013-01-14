@@ -1,9 +1,9 @@
 package healer
 
 import (
+    "fmt"
 	"github.com/flaviamissi/go-elb/aws"
 	"github.com/flaviamissi/go-elb/elb"
-	"log/syslog"
 )
 
 // Seeker is responsible to seek for unhealthy instances
@@ -32,8 +32,6 @@ type LoadBalancer struct {
 type AWSSeeker struct {
 	ELB *elb.ELB
 }
-
-var log *syslog.Writer
 
 func NewAWSSeeker() *AWSSeeker {
 	auth, err := aws.EnvAuth()
@@ -76,7 +74,7 @@ func (s *AWSSeeker) SeekUnhealthyInstances() ([]Instance, error) {
 		}
 		unhealthy = append(unhealthy, s.matchCriteria(instances, model)...)
 	}
-	log.Info("Found " + len(unhealthy) + " unhealthy instances.")
+	log.Info(fmt.Sprintf("Found %d unhealthy instances.", len(unhealthy)))
 	return unhealthy, nil
 }
 
