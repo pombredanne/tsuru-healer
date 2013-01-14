@@ -1,7 +1,7 @@
 package healer
 
 import (
-    "fmt"
+	"fmt"
 	"github.com/flaviamissi/go-elb/aws"
 	"github.com/flaviamissi/go-elb/elb"
 )

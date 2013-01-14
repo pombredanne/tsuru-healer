@@ -25,11 +25,11 @@ type TsuruHealer struct {
 var log *syslog.Writer
 
 func init() {
-    var err error
+	var err error
 	log, err = syslog.New(syslog.LOG_INFO, "gandalf-listener")
-    if err != nil {
-        panic(err)
-    }
+	if err != nil {
+		panic(err)
+	}
 }
 
 // Heal iterates through down instances, terminate then
