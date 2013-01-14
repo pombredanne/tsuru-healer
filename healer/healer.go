@@ -26,7 +26,7 @@ var log *syslog.Writer
 
 func init() {
 	var err error
-	log, err = syslog.New(syslog.LOG_INFO, "gandalf-listener")
+	log, err = syslog.New(syslog.LOG_INFO, "tsuru-healer")
 	if err != nil {
 		panic(err)
 	}
