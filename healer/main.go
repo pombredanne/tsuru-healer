@@ -11,14 +11,17 @@ import (
 )
 
 func main() {
-	var log *syslog.Writer
+    log, err := syslog.New(syslog.LOG_INFO, "tsuru-healer")
+	if err != nil {
+		panic(err)
+	}
 	if len(os.Args) < 3 {
 		fmt.Println("Healer expects email, password and endpoint to connect with tsuru.")
 		return
 	}
-	email := os.Args[0]
-	password := os.Args[1]
-	endpoint := os.Args[2]
+	email := os.Args[1]
+	password := os.Args[2]
+	endpoint := os.Args[3]
 	healer := healer.NewTsuruHealer(email, password, endpoint)
 	for _ = range time.Tick(time.Minute) {
 		err := healer.Heal()
