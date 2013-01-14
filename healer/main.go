@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-    log, err := syslog.New(syslog.LOG_INFO, "tsuru-healer")
+	log, err := syslog.New(syslog.LOG_INFO, "tsuru-healer")
 	if err != nil {
 		panic(err)
 	}
