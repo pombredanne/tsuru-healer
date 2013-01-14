@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log/syslog"
 	"net/http"
 )
 
@@ -21,9 +22,12 @@ type TsuruHealer struct {
 	seeker   Seeker
 }
 
+var log *syslog.Writer
+
 // Heal iterates through down instances, terminate then
 // and spawn new ones to replace the terminated.
 func (h *TsuruHealer) Heal() error {
+	log.Info("Starting healing process... this can take a while.")
 	instances, err := h.seeker.SeekUnhealthyInstances()
 	if err != nil {
 		return err
@@ -31,11 +35,11 @@ func (h *TsuruHealer) Heal() error {
 	for _, instance := range instances {
 		if err := h.Terminate(instance.LoadBalancer, instance.InstanceId); err != nil {
 			// should really stop here?
+			log.Err("Got error while terminating instance: " + err.Error())
 			return err
 		}
 		if err := h.Spawn(instance.LoadBalancer); err != nil {
-			// should really stop here?
-			return err
+			log.Err("Got error while spawining instance: " + err.Error())
 		}
 	}
 	return nil

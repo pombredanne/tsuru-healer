@@ -3,6 +3,7 @@ package healer
 import (
 	"github.com/flaviamissi/go-elb/aws"
 	"github.com/flaviamissi/go-elb/elb"
+	"log/syslog"
 )
 
 // Seeker is responsible to seek for unhealthy instances
@@ -32,6 +33,8 @@ type AWSSeeker struct {
 	ELB *elb.ELB
 }
 
+var log *syslog.Writer
+
 func NewAWSSeeker() *AWSSeeker {
 	auth, err := aws.EnvAuth()
 	if err != nil {
@@ -55,6 +58,7 @@ func (s *AWSSeeker) matchCriteria(instances []Instance, model Instance) []Instan
 }
 
 func (s *AWSSeeker) SeekUnhealthyInstances() ([]Instance, error) {
+	log.Info("Seeking for unhealthy instances..")
 	lbs, err := s.DescribeLoadBalancers()
 	if err != nil {
 		return nil, err
@@ -72,6 +76,7 @@ func (s *AWSSeeker) SeekUnhealthyInstances() ([]Instance, error) {
 		}
 		unhealthy = append(unhealthy, s.matchCriteria(instances, model)...)
 	}
+	log.Info("Found " + len(unhealthy) + " unhealthy instances.")
 	return unhealthy, nil
 }
 
