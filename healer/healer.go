@@ -56,7 +56,7 @@ func (h *TsuruHealer) Heal() error {
 
 func getToken(email, password, endpoint string) (string, error) {
 	url := fmt.Sprintf("%s/users/%s/tokens", endpoint, email)
-	b := fmt.Sprintf(`{"password": %s}`, password)
+	b := fmt.Sprintf(`{"password": "%s"}`, password)
 	body := bytes.NewBufferString(b)
 	resp, err := http.Post(url, "application/json", body)
 	if err != nil {
