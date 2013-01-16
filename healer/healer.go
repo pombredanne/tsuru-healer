@@ -94,8 +94,8 @@ func (h *TsuruHealer) Spawn(lb string) error {
 
 // Calls tsuru remove-unit endpoint
 func (h *TsuruHealer) Terminate(lb, id string) error {
-	url := fmt.Sprintf("%s/apps/%s/units", h.Endpoint, lb)
-	body := bytes.NewBufferString("1")
+	url := fmt.Sprintf("%s/apps/%s/unit", h.Endpoint, lb)
+	body := bytes.NewBufferString(id)
 	resp, err := request("DELETE", url, h.token, body)
 	if err != nil {
 		return err

@@ -45,7 +45,7 @@ func (s *S) TestTerminate(c *C) {
 	s.healer.Endpoint = ts.URL
 	err := s.healer.Terminate("testlb", "i-123")
 	c.Assert(err, IsNil)
-	c.Assert(req.URL.String(), Equals, "/apps/testlb/units")
+	c.Assert(req.URL.String(), Equals, "/apps/testlb/unit")
 	c.Assert(req.Method, Equals, "DELETE")
 }
 
@@ -70,7 +70,7 @@ func (s *S) TestHealer(c *C) {
 	err := s.healer.Heal()
 	c.Assert(err, IsNil)
 	c.Assert(len(reqs), Equals, 2)
-	c.Assert(reqs[0].URL.String(), Equals, "/apps/testlb/units")
+	c.Assert(reqs[0].URL.String(), Equals, "/apps/testlb/unit")
 	c.Assert(reqs[0].Method, Equals, "DELETE")
 	c.Assert(reqs[0].Header.Get("Authorization"), Equals, s.token)
 	c.Assert(reqs[1].URL.String(), Equals, "/apps/testlb/units")
