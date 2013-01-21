@@ -9,11 +9,13 @@ import (
 	"io/ioutil"
 	"log/syslog"
 	"net/http"
+	"sync"
 )
 
 var (
 	healers []healer
-	log *syslog.Writer
+	log     *syslog.Writer
+	mut     sync.Mutex
 )
 
 func init() {
@@ -25,10 +27,14 @@ func init() {
 }
 
 func register(h healer) {
+	mut.Lock()
+	defer mut.Unlock()
 	healers = append(healers, h)
 }
 
 func getHealers() []healer {
+	mut.Lock()
+	defer mut.Unlock()
 	return healers
 }
 
