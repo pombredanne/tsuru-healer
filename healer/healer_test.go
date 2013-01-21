@@ -85,8 +85,8 @@ func (s *S) TestHealersFromResource(c *C) {
 		w.Write([]byte(`{"bootstrap":"/bootstrap"}`))
 	}))
 	defer ts.Close()
-	expected := map[string]string{
-		"bootstrap": "/bootstrap",
+	expected := []TsuruHealer{
+		{url: "/bootstrap"},
 	}
 	healers, err := healersFromResource(ts.URL)
 	c.Assert(err, IsNil)

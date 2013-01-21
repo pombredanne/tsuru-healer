@@ -141,7 +141,7 @@ func NewInstanceHealer(email, password, endpoint string) *InstanceHealer {
 }
 
 // healersFromResource returns healers registered in tsuru.
-func healersFromResource(endpoint string) (map[string]string, error) {
+func healersFromResource(endpoint string) ([]TsuruHealer, error) {
 	url := fmt.Sprintf("%s/healers", endpoint)
 	response, err := request("GET", url, "", nil)
 	if err != nil {
@@ -151,10 +151,14 @@ func healersFromResource(endpoint string) (map[string]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	h := map[string]string{}
-	err = json.Unmarshal(body, &h)
+	h := []TsuruHealer{}
+	data := map[string]string{}
+	err = json.Unmarshal(body, &data)
 	if err != nil {
 		return nil, err
+	}
+	for _, url := range data {
+		h = append(h, TsuruHealer{url: url})
 	}
 	return h, nil
 }
