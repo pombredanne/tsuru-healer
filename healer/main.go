@@ -1,10 +1,7 @@
-// +build ignore
-
 package main
 
 import (
 	"fmt"
-	"github.com/globocom/tsuru-healer/healer"
 	"log/syslog"
 	"os"
 	"time"
@@ -22,7 +19,7 @@ func main() {
 	email := os.Args[1]
 	password := os.Args[2]
 	endpoint := os.Args[3]
-	healer := healer.NewInstanceHealer(email, password, endpoint)
+	healer := NewInstanceHealer(email, password, endpoint)
 	for _ = range time.Tick(time.Minute) {
 		err := healer.Heal()
 		if err != nil {

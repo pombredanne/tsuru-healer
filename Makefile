@@ -65,5 +65,5 @@ get-prod:
 test:
 	@go test -i ./...
 	@go test ./...
-	@go build healer/main.go
-	@rm main
+	@go build -o hbin ./healer
+	@rm hbin

@@ -1,4 +1,4 @@
-package healer
+package main
 
 import (
 	"github.com/flaviamissi/go-elb/elb"
