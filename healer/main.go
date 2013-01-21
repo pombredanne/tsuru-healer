@@ -22,7 +22,7 @@ func main() {
 	email := os.Args[1]
 	password := os.Args[2]
 	endpoint := os.Args[3]
-	healer := healer.NewTsuruHealer(email, password, endpoint)
+	healer := healer.NewInstanceHealer(email, password, endpoint)
 	for _ = range time.Tick(time.Minute) {
 		err := healer.Heal()
 		if err != nil {
