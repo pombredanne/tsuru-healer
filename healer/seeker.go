@@ -8,69 +8,69 @@ import (
 
 // Seeker is responsible to seek for unhealthy instances
 // under a Load Balancer
-type Seeker interface {
-	DescribeInstancesHealth(lb string) ([]Instance, error)
-	DescribeLoadBalancers() ([]LoadBalancer, error)
-	SeekUnhealthyInstances() ([]Instance, error)
+type seeker interface {
+	describeInstancesHealth(lb string) ([]instance, error)
+	describeLoadBalancers() ([]loadBalancer, error)
+	seekUnhealthyInstances() ([]instance, error)
 }
 
-type Instance struct {
-	InstanceId   string
-	Description  string
-	ReasonCode   string
-	State        string
-	LoadBalancer string
+type instance struct {
+	instanceId   string
+	description  string
+	reasonCode   string
+	state        string
+	loadBalancer string
 }
 
-type LoadBalancer struct {
-	AvailZones []string
-	DNSName    string
-	Instances  []Instance
-	Name       string
+type loadBalancer struct {
+	availZones []string
+	dnsName    string
+	instances  []instance
+	name       string
 }
 
-type AWSSeeker struct {
-	ELB *elb.ELB
+type awsSeeker struct {
+	elb *elb.ELB
 }
 
-func NewAWSSeeker() *AWSSeeker {
+func newAWSSeeker() *awsSeeker {
 	auth, err := aws.EnvAuth()
 	if err != nil {
 		panic(err.Error())
 	}
 	// receive region?
-	return &AWSSeeker{
-		ELB: elb.New(auth, aws.USEast),
+	return &awsSeeker{
+		elb: elb.New(auth, aws.USEast),
 	}
 }
 
-func (s *AWSSeeker) matchCriteria(instances []Instance, model Instance) []Instance {
-	matches := []Instance{}
+func (s *awsSeeker) matchCriteria(instances []instance, model instance) []instance {
+	matches := []instance{}
 	for _, instance := range instances {
-		if instance.Description == model.Description && instance.State == model.State &&
-			instance.ReasonCode == model.ReasonCode {
+		if instance.description == model.description && instance.state == model.state &&
+			instance.reasonCode == model.reasonCode {
 			matches = append(matches, instance)
 		}
 	}
 	return matches
 }
 
-func (s *AWSSeeker) SeekUnhealthyInstances() ([]Instance, error) {
+func (s *awsSeeker) seekUnhealthyInstances() ([]instance, error) {
 	log.Info("Seeking for unhealthy instances..")
-	lbs, err := s.DescribeLoadBalancers()
+	lbs, err := s.describeLoadBalancers()
 	if err != nil {
 		return nil, err
 	}
-	unhealthy := []Instance{}
+	unhealthy := []instance{}
 	for _, lb := range lbs {
-		instances, err := s.DescribeInstancesHealth(lb.Name)
+		instances, err := s.describeInstancesHealth(lb.name)
 		if err != nil {
 			return nil, err
 		}
-		model := Instance{
-			Description: "Instance has failed at least the UnhealthyThreshold number of health checks consecutively.",
-			State:       "OutOfService",
-			ReasonCode:  "Instance",
+		model := instance{
+			description: "Instance has failed at least the UnhealthyThreshold number of health checks consecutively.",
+			state:       "OutOfService",
+			reasonCode:  "Instance",
 		}
 		unhealthy = append(unhealthy, s.matchCriteria(instances, model)...)
 	}
@@ -78,37 +78,37 @@ func (s *AWSSeeker) SeekUnhealthyInstances() ([]Instance, error) {
 	return unhealthy, nil
 }
 
-func (s *AWSSeeker) DescribeInstancesHealth(lb string) ([]Instance, error) {
-	resp, err := s.ELB.DescribeInstanceHealth(lb)
+func (s *awsSeeker) describeInstancesHealth(lb string) ([]instance, error) {
+	resp, err := s.elb.DescribeInstanceHealth(lb)
 	if err != nil {
 		return nil, err
 	}
-	instances := make([]Instance, len(resp.InstanceStates))
+	instances := make([]instance, len(resp.InstanceStates))
 	for i, state := range resp.InstanceStates {
-		instances[i].InstanceId = state.InstanceId
-		instances[i].Description = state.Description
-		instances[i].ReasonCode = state.ReasonCode
-		instances[i].State = state.State
-		instances[i].LoadBalancer = lb
+		instances[i].instanceId = state.InstanceId
+		instances[i].description = state.Description
+		instances[i].reasonCode = state.ReasonCode
+		instances[i].state = state.State
+		instances[i].loadBalancer = lb
 	}
 	return instances, nil
 }
 
-func (s *AWSSeeker) DescribeLoadBalancers() ([]LoadBalancer, error) {
-	resp, err := s.ELB.DescribeLoadBalancers()
+func (s *awsSeeker) describeLoadBalancers() ([]loadBalancer, error) {
+	resp, err := s.elb.DescribeLoadBalancers()
 	if err != nil {
 		return nil, err
 	}
-	lbs := []LoadBalancer{}
+	lbs := []loadBalancer{}
 	for _, lbDesc := range resp.LoadBalancerDescriptions {
-		lb := LoadBalancer{
-			AvailZones: lbDesc.AvailZones,
-			Name:       lbDesc.LoadBalancerName,
-			DNSName:    lbDesc.DNSName,
+		lb := loadBalancer{
+			availZones: lbDesc.AvailZones,
+			name:       lbDesc.LoadBalancerName,
+			dnsName:    lbDesc.DNSName,
 		}
-		instances := make([]Instance, len(lbDesc.Instances))
+		instances := make([]instance, len(lbDesc.Instances))
 		for i, instance := range lbDesc.Instances {
-			instances[i].InstanceId = instance.InstanceId
+			instances[i].instanceId = instance.InstanceId
 		}
 		lbs = append(lbs, lb)
 	}

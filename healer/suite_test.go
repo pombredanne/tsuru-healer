@@ -12,8 +12,8 @@ func Test(t *testing.T) { TestingT(t) }
 
 type S struct {
 	elbsrv *elbtest.Server
-	seeker Seeker
-	healer *InstanceHealer
+	seeker seeker
+	healer *instanceHealer
 	instId string
 	token  string
 }
@@ -23,7 +23,7 @@ var _ = Suite(&S{})
 func (s *S) SetUpSuite(c *C) {
 	s.setUpELB(c)
 	s.token = "123456"
-	s.healer = &InstanceHealer{token: s.token}
+	s.healer = &instanceHealer{token: s.token}
 }
 
 func (s *S) setUpELB(c *C) {
@@ -33,8 +33,8 @@ func (s *S) setUpELB(c *C) {
 	s.elbsrv.NewLoadBalancer("testlb")
 	s.instId = s.elbsrv.NewInstance()
 	s.elbsrv.RegisterInstance(s.instId, "testlb")
-	s.seeker = &AWSSeeker{
-		ELB: elb.New(aws.Auth{AccessKey: "auth", SecretKey: "s3cr3t"}, aws.Region{ELBEndpoint: s.elbsrv.URL()}),
+	s.seeker = &awsSeeker{
+		elb: elb.New(aws.Auth{AccessKey: "auth", SecretKey: "s3cr3t"}, aws.Region{ELBEndpoint: s.elbsrv.URL()}),
 	}
 }
 

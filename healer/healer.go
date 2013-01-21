@@ -11,23 +11,21 @@ import (
 	"net/http"
 )
 
-type Healer interface {
-	Heal() error
-	Spawn(lb string) error
-	Terminate(lb, id string) error
+type healer interface {
+	heal() error
 }
 
-type InstanceHealer struct {
-	Endpoint string
-	seeker   Seeker
+type instanceHealer struct {
+	endpoint string
+	seeker   seeker
 	token    string
 }
 
-type TsuruHealer struct {
+type tsuruHealer struct {
 	url string
 }
 
-func (h *TsuruHealer) Heal() error {
+func (h *tsuruHealer) heal() error {
 	_, err := request("GET", h.url, "", nil)
 	return err
 }
@@ -44,19 +42,19 @@ func init() {
 
 // Heal iterates through down instances, terminate then
 // and spawn new ones to replace the terminated.
-func (h *InstanceHealer) Heal() error {
+func (h *instanceHealer) heal() error {
 	log.Info("Starting healing process... this can take a while.")
-	instances, err := h.seeker.SeekUnhealthyInstances()
+	instances, err := h.seeker.seekUnhealthyInstances()
 	if err != nil {
 		return err
 	}
 	for _, instance := range instances {
-		if err := h.Terminate(instance.LoadBalancer, instance.InstanceId); err != nil {
+		if err := h.terminate(instance.loadBalancer, instance.instanceId); err != nil {
 			// should really stop here?
 			log.Err("Got error while terminating instance: " + err.Error())
 			return err
 		}
-		if err := h.Spawn(instance.LoadBalancer); err != nil {
+		if err := h.spawn(instance.loadBalancer); err != nil {
 			log.Err("Got error while spawining instance: " + err.Error())
 		}
 	}
@@ -88,8 +86,8 @@ func getToken(email, password, endpoint string) (string, error) {
 }
 
 // Calls tsuru add-unit endpoint
-func (h *InstanceHealer) Spawn(lb string) error {
-	url := fmt.Sprintf("%s/apps/%s/units", h.Endpoint, lb)
+func (h *instanceHealer) spawn(lb string) error {
+	url := fmt.Sprintf("%s/apps/%s/units", h.endpoint, lb)
 	body := bytes.NewBufferString("1")
 	resp, err := request("PUT", url, h.token, body)
 	if err != nil {
@@ -102,8 +100,8 @@ func (h *InstanceHealer) Spawn(lb string) error {
 }
 
 // Calls tsuru remove-unit endpoint
-func (h *InstanceHealer) Terminate(lb, id string) error {
-	url := fmt.Sprintf("%s/apps/%s/unit", h.Endpoint, lb)
+func (h *instanceHealer) terminate(lb, id string) error {
+	url := fmt.Sprintf("%s/apps/%s/unit", h.endpoint, lb)
 	body := bytes.NewBufferString(id)
 	resp, err := request("DELETE", url, h.token, body)
 	if err != nil {
@@ -128,20 +126,20 @@ func request(method, url, token string, body io.Reader) (*http.Response, error) 
 	return resp, nil
 }
 
-func NewInstanceHealer(email, password, endpoint string) *InstanceHealer {
+func newInstanceHealer(email, password, endpoint string) *instanceHealer {
 	token, err := getToken(email, password, endpoint)
 	if err != nil {
 		panic(err.Error())
 	}
-	return &InstanceHealer{
-		seeker:   NewAWSSeeker(),
-		Endpoint: endpoint,
+	return &instanceHealer{
+		seeker:   newAWSSeeker(),
+		endpoint: endpoint,
 		token:    token,
 	}
 }
 
 // healersFromResource returns healers registered in tsuru.
-func healersFromResource(endpoint string) ([]TsuruHealer, error) {
+func healersFromResource(endpoint string) ([]tsuruHealer, error) {
 	url := fmt.Sprintf("%s/healers", endpoint)
 	response, err := request("GET", url, "", nil)
 	if err != nil {
@@ -151,14 +149,14 @@ func healersFromResource(endpoint string) ([]TsuruHealer, error) {
 	if err != nil {
 		return nil, err
 	}
-	h := []TsuruHealer{}
+	h := []tsuruHealer{}
 	data := map[string]string{}
 	err = json.Unmarshal(body, &data)
 	if err != nil {
 		return nil, err
 	}
 	for _, url := range data {
-		h = append(h, TsuruHealer{url: url})
+		h = append(h, tsuruHealer{url: url})
 	}
 	return h, nil
 }

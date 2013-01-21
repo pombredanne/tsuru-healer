@@ -28,8 +28,8 @@ func (s *S) TestSpawn(c *C) {
 		w.Write([]byte(""))
 	}))
 	defer ts.Close()
-	s.healer.Endpoint = ts.URL
-	err := s.healer.Spawn("testlb")
+	s.healer.endpoint = ts.URL
+	err := s.healer.spawn("testlb")
 	c.Assert(err, IsNil)
 	c.Assert(req.URL.String(), Equals, "/apps/testlb/units")
 	c.Assert(req.Method, Equals, "PUT")
@@ -42,8 +42,8 @@ func (s *S) TestTerminate(c *C) {
 		w.Write([]byte(""))
 	}))
 	defer ts.Close()
-	s.healer.Endpoint = ts.URL
-	err := s.healer.Terminate("testlb", "i-123")
+	s.healer.endpoint = ts.URL
+	err := s.healer.terminate("testlb", "i-123")
 	c.Assert(err, IsNil)
 	c.Assert(req.URL.String(), Equals, "/apps/testlb/unit")
 	c.Assert(req.Method, Equals, "DELETE")
@@ -56,10 +56,10 @@ func (s *S) TestHealer(c *C) {
 		w.Write([]byte("123"))
 	}))
 	defer ts.Close()
-	s.healer.seeker = &AWSSeeker{
-		ELB: elb.New(aws.Auth{AccessKey: "auth", SecretKey: "s3cr3t"}, aws.Region{ELBEndpoint: s.elbsrv.URL()}),
+	s.healer.seeker = &awsSeeker{
+		elb: elb.New(aws.Auth{AccessKey: "auth", SecretKey: "s3cr3t"}, aws.Region{ELBEndpoint: s.elbsrv.URL()}),
 	}
-	s.healer.Endpoint = ts.URL
+	s.healer.endpoint = ts.URL
 	state := elb.InstanceState{
 		Description: "Instance has failed at least the UnhealthyThreshold number of health checks consecutively.",
 		State:       "OutOfService",
@@ -67,7 +67,7 @@ func (s *S) TestHealer(c *C) {
 		InstanceId:  s.instId,
 	}
 	s.elbsrv.ChangeInstanceState("testlb", state)
-	err := s.healer.Heal()
+	err := s.healer.heal()
 	c.Assert(err, IsNil)
 	c.Assert(len(reqs), Equals, 2)
 	c.Assert(reqs[0].URL.String(), Equals, "/apps/testlb/unit")
@@ -85,7 +85,7 @@ func (s *S) TestHealersFromResource(c *C) {
 		w.Write([]byte(`{"bootstrap":"/bootstrap"}`))
 	}))
 	defer ts.Close()
-	expected := []TsuruHealer{
+	expected := []tsuruHealer{
 		{url: "/bootstrap"},
 	}
 	healers, err := healersFromResource(ts.URL)
@@ -99,10 +99,10 @@ func (s *S) TestTsuruHealer(c *C) {
 		called = true
 	}))
 	defer ts.Close()
-	h := TsuruHealer{
+	h := tsuruHealer{
 		url: ts.URL,
 	}
-	err := h.Heal()
+	err := h.heal()
 	c.Assert(err, IsNil)
 	c.Assert(called, Equals, true)
 }
