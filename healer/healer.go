@@ -23,6 +23,15 @@ type TsuruHealer struct {
 	token    string
 }
 
+type GenericHealer struct {
+	url string
+}
+
+func (h *GenericHealer) Heal() error {
+	_, err := request("GET", h.url, "", nil)
+	return err
+}
+
 var log *syslog.Writer
 
 func init() {

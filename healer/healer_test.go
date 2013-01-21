@@ -92,3 +92,17 @@ func (s *S) TestHealersFromResource(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(healers, DeepEquals, expected)
 }
+
+func (s *S) TestGenericHealer(c *C) {
+	var called bool
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		called = true
+	}))
+	defer ts.Close()
+	h := GenericHealer{
+		url: ts.URL,
+	}
+	err := h.Heal()
+	c.Assert(err, IsNil)
+	c.Assert(called, Equals, true)
+}
