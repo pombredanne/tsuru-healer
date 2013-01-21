@@ -99,10 +99,15 @@ func (s *S) TestTsuruHealer(c *C) {
 		called = true
 	}))
 	defer ts.Close()
-	h := tsuruHealer{
-		url: ts.URL,
-	}
+	h := tsuruHealer{url: ts.URL}
 	err := h.heal()
 	c.Assert(err, IsNil)
 	c.Assert(called, Equals, true)
+}
+
+func (s *S) TestRegisterAndGetHealers(c *C) {
+	h := &tsuruHealer{url: ""}
+	register(h)
+	healers := getHealers()
+	c.Assert(healers, DeepEquals, []healer{h})
 }

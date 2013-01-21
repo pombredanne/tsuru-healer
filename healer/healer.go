@@ -11,6 +11,27 @@ import (
 	"net/http"
 )
 
+var (
+	healers []healer
+	log *syslog.Writer
+)
+
+func init() {
+	var err error
+	log, err = syslog.New(syslog.LOG_INFO, "tsuru-healer")
+	if err != nil {
+		panic(err)
+	}
+}
+
+func register(h healer) {
+	healers = append(healers, h)
+}
+
+func getHealers() []healer {
+	return healers
+}
+
 type healer interface {
 	heal() error
 }
@@ -28,16 +49,6 @@ type tsuruHealer struct {
 func (h *tsuruHealer) heal() error {
 	_, err := request("GET", h.url, "", nil)
 	return err
-}
-
-var log *syslog.Writer
-
-func init() {
-	var err error
-	log, err = syslog.New(syslog.LOG_INFO, "tsuru-healer")
-	if err != nil {
-		panic(err)
-	}
 }
 
 // Heal iterates through down instances, terminate then
