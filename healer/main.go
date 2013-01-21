@@ -20,6 +20,7 @@ func main() {
 	password := os.Args[2]
 	endpoint := os.Args[3]
 	healer := newInstanceHealer(email, password, endpoint)
+	register(healer)
 	for _ = range time.Tick(time.Minute) {
 		err := healer.heal()
 		if err != nil {
