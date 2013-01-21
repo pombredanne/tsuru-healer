@@ -13,7 +13,7 @@ func Test(t *testing.T) { TestingT(t) }
 type S struct {
 	elbsrv *elbtest.Server
 	seeker Seeker
-	healer *TsuruHealer
+	healer *InstanceHealer
 	instId string
 	token  string
 }
@@ -23,7 +23,7 @@ var _ = Suite(&S{})
 func (s *S) SetUpSuite(c *C) {
 	s.setUpELB(c)
 	s.token = "123456"
-	s.healer = &TsuruHealer{token: s.token}
+	s.healer = &InstanceHealer{token: s.token}
 }
 
 func (s *S) setUpELB(c *C) {

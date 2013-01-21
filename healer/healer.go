@@ -17,7 +17,7 @@ type Healer interface {
 	Terminate(lb, id string) error
 }
 
-type TsuruHealer struct {
+type InstanceHealer struct {
 	Endpoint string
 	seeker   Seeker
 	token    string
@@ -44,7 +44,7 @@ func init() {
 
 // Heal iterates through down instances, terminate then
 // and spawn new ones to replace the terminated.
-func (h *TsuruHealer) Heal() error {
+func (h *InstanceHealer) Heal() error {
 	log.Info("Starting healing process... this can take a while.")
 	instances, err := h.seeker.SeekUnhealthyInstances()
 	if err != nil {
@@ -88,7 +88,7 @@ func getToken(email, password, endpoint string) (string, error) {
 }
 
 // Calls tsuru add-unit endpoint
-func (h *TsuruHealer) Spawn(lb string) error {
+func (h *InstanceHealer) Spawn(lb string) error {
 	url := fmt.Sprintf("%s/apps/%s/units", h.Endpoint, lb)
 	body := bytes.NewBufferString("1")
 	resp, err := request("PUT", url, h.token, body)
@@ -102,7 +102,7 @@ func (h *TsuruHealer) Spawn(lb string) error {
 }
 
 // Calls tsuru remove-unit endpoint
-func (h *TsuruHealer) Terminate(lb, id string) error {
+func (h *InstanceHealer) Terminate(lb, id string) error {
 	url := fmt.Sprintf("%s/apps/%s/unit", h.Endpoint, lb)
 	body := bytes.NewBufferString(id)
 	resp, err := request("DELETE", url, h.token, body)
@@ -128,12 +128,12 @@ func request(method, url, token string, body io.Reader) (*http.Response, error) 
 	return resp, nil
 }
 
-func NewTsuruHealer(email, password, endpoint string) *TsuruHealer {
+func NewInstanceHealer(email, password, endpoint string) *InstanceHealer {
 	token, err := getToken(email, password, endpoint)
 	if err != nil {
 		panic(err.Error())
 	}
-	return &TsuruHealer{
+	return &InstanceHealer{
 		seeker:   NewAWSSeeker(),
 		Endpoint: endpoint,
 		token:    token,
