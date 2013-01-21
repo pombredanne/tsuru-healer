@@ -23,11 +23,11 @@ type InstanceHealer struct {
 	token    string
 }
 
-type GenericHealer struct {
+type TsuruHealer struct {
 	url string
 }
 
-func (h *GenericHealer) Heal() error {
+func (h *TsuruHealer) Heal() error {
 	_, err := request("GET", h.url, "", nil)
 	return err
 }

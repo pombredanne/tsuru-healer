@@ -93,13 +93,13 @@ func (s *S) TestHealersFromResource(c *C) {
 	c.Assert(healers, DeepEquals, expected)
 }
 
-func (s *S) TestGenericHealer(c *C) {
+func (s *S) TestTsuruHealer(c *C) {
 	var called bool
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		called = true
 	}))
 	defer ts.Close()
-	h := GenericHealer{
+	h := TsuruHealer{
 		url: ts.URL,
 	}
 	err := h.Heal()
