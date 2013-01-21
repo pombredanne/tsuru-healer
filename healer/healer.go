@@ -130,3 +130,22 @@ func NewTsuruHealer(email, password, endpoint string) *TsuruHealer {
 		token:    token,
 	}
 }
+
+// healersFromResource returns healers registered in tsuru.
+func healersFromResource(endpoint string) (map[string]string, error) {
+	url := fmt.Sprintf("%s/healers", endpoint)
+	response, err := request("GET", url, "", nil)
+	if err != nil {
+		return nil, err
+	}
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return nil, err
+	}
+	h := map[string]string{}
+	err = json.Unmarshal(body, &h)
+	if err != nil {
+		return nil, err
+	}
+	return h, nil
+}

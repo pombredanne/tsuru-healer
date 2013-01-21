@@ -77,3 +77,18 @@ func (s *S) TestHealer(c *C) {
 	c.Assert(reqs[1].Method, Equals, "PUT")
 	c.Assert(reqs[1].Header.Get("Authorization"), Equals, s.token)
 }
+
+func (s *S) TestHealersFromResource(c *C) {
+	reqs := []*http.Request{}
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		reqs = append(reqs, r)
+		w.Write([]byte(`{"bootstrap":"/bootstrap"}`))
+	}))
+	defer ts.Close()
+	expected := map[string]string{
+		"bootstrap": "/bootstrap",
+	}
+	healers, err := healersFromResource(ts.URL)
+	c.Assert(err, IsNil)
+	c.Assert(healers, DeepEquals, expected)
+}
