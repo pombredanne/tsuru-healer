@@ -18,14 +18,6 @@ var (
 	mut     sync.Mutex
 )
 
-func init() {
-	var err error
-	log, err = syslog.New(syslog.LOG_INFO, "tsuru-healer")
-	if err != nil {
-		panic(err)
-	}
-}
-
 func register(h healer) {
 	mut.Lock()
 	defer mut.Unlock()

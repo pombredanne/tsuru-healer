@@ -5,6 +5,7 @@ import (
 	"github.com/flaviamissi/go-elb/elb"
 	"github.com/flaviamissi/go-elb/elb/elbtest"
 	. "launchpad.net/gocheck"
+	"log/syslog"
 	"testing"
 )
 
@@ -21,6 +22,9 @@ type S struct {
 var _ = Suite(&S{})
 
 func (s *S) SetUpSuite(c *C) {
+	var err error
+	log, err = syslog.New(syslog.LOG_INFO, "tsuru-healer")
+	c.Assert(err, IsNil)
 	s.setUpELB(c)
 	s.token = "123456"
 	s.healer = &instanceHealer{token: s.token}
