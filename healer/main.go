@@ -8,7 +8,8 @@ import (
 )
 
 func main() {
-	log, err := syslog.New(syslog.LOG_INFO, "tsuru-healer")
+	var err error
+	log, err = syslog.New(syslog.LOG_INFO, "tsuru-healer")
 	if err != nil {
 		panic(err)
 	}
@@ -21,10 +22,6 @@ func main() {
 	endpoint := os.Args[3]
 	healer := newInstanceHealer(email, password, endpoint)
 	register("instance-healer", healer)
-	for _ = range time.Tick(time.Minute) {
-		err := healer.heal()
-		if err != nil {
-			log.Err("Got error while healing: " + err.Error())
-		}
-	}
+	registerTicker(time.Tick(time.Minute), endpoint)
+	healTicker(time.Tick(time.Minute))
 }
