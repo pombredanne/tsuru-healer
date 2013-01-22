@@ -109,5 +109,9 @@ func (s *S) TestRegisterAndGetHealers(c *C) {
 	h := &tsuruHealer{url: ""}
 	register(h)
 	healers := getHealers()
-	c.Assert(healers, DeepEquals, []healer{h})
+	for _, healer := range healers {
+		if c.Check(h, DeepEquals, healer) {
+			c.SucceedNow()
+		}
+	}
 }
