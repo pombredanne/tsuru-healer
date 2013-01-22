@@ -22,7 +22,7 @@ func (s *S) TestHealTicker(c *C) {
 		ok <- true
 	}()
 	ch <- time.Now()
-	time.Sleep(1 * time.Millisecond)
+	time.Sleep(1 * time.Second)
 	close(ch)
 	<-ok
 	c.Assert(called, Equals, true)
@@ -41,7 +41,7 @@ func (s *S) TestRegisterTicker(c *C) {
 		ok <- true
 	}()
 	ch <- time.Now()
-	time.Sleep(1 * time.Millisecond)
+	time.Sleep(1 * time.Second)
 	close(ch)
 	<-ok
 	c.Assert(called, Equals, true)
