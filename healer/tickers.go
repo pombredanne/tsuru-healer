@@ -12,6 +12,7 @@ func healTicker(ticker chan time.Time) {
 	}
 }
 
+// registerTicker register healers from resource.
 func registerTicker(ticker chan time.Time, endpoint string) {
 	go func() {
 		for _ = range ticker {
