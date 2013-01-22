@@ -14,7 +14,7 @@ func (s *S) TestHealTicker(c *C) {
 	}))
 	defer ts.Close()
 	h := &tsuruHealer{url: ts.URL}
-	register(h)
+	register("ticker-healer", h)
 	ch := make(chan time.Time)
 	ok := make(chan bool)
 	go func() {

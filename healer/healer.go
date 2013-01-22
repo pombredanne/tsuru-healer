@@ -13,18 +13,19 @@ import (
 )
 
 var (
-	healers []healer
-	log     *syslog.Writer
-	mut     sync.Mutex
+	log *syslog.Writer
+	mut sync.Mutex
 )
 
-func register(h healer) {
+var healers = make(map[string]healer)
+
+func register(name string, h healer) {
 	mut.Lock()
 	defer mut.Unlock()
-	healers = append(healers, h)
+	healers[name] = h
 }
 
-func getHealers() []healer {
+func getHealers() map[string]healer {
 	mut.Lock()
 	defer mut.Unlock()
 	return healers
@@ -148,7 +149,7 @@ func newInstanceHealer(email, password, endpoint string) *instanceHealer {
 }
 
 // healersFromResource returns healers registered in tsuru.
-func healersFromResource(endpoint string) ([]tsuruHealer, error) {
+func healersFromResource(endpoint string) (map[string]tsuruHealer, error) {
 	url := fmt.Sprintf("%s/healers", endpoint)
 	response, err := request("GET", url, "", nil)
 	if err != nil {
@@ -158,14 +159,14 @@ func healersFromResource(endpoint string) ([]tsuruHealer, error) {
 	if err != nil {
 		return nil, err
 	}
-	h := []tsuruHealer{}
+	h := map[string]tsuruHealer{}
 	data := map[string]string{}
 	err = json.Unmarshal(body, &data)
 	if err != nil {
 		return nil, err
 	}
-	for _, url := range data {
-		h = append(h, tsuruHealer{url: url})
+	for name, url := range data {
+		h[name] = tsuruHealer{url: url}
 	}
 	return h, nil
 }

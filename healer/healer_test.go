@@ -85,8 +85,8 @@ func (s *S) TestHealersFromResource(c *C) {
 		w.Write([]byte(`{"bootstrap":"/bootstrap"}`))
 	}))
 	defer ts.Close()
-	expected := []tsuruHealer{
-		{url: "/bootstrap"},
+	expected := map[string]tsuruHealer{
+		"bootstrap": tsuruHealer{url: "/bootstrap"},
 	}
 	healers, err := healersFromResource(ts.URL)
 	c.Assert(err, IsNil)
@@ -107,11 +107,9 @@ func (s *S) TestTsuruHealer(c *C) {
 
 func (s *S) TestRegisterAndGetHealers(c *C) {
 	h := &tsuruHealer{url: ""}
-	register(h)
+	register("test-healer", h)
 	healers := getHealers()
-	for _, healer := range healers {
-		if c.Check(h, DeepEquals, healer) {
-			c.SucceedNow()
-		}
-	}
+	healer, ok := healers["test-healer"]
+	c.Assert(healer, DeepEquals, h)
+	c.Assert(ok, Equals, true)
 }
