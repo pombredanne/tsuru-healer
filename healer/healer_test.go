@@ -86,7 +86,7 @@ func (s *S) TestHealersFromResource(c *C) {
 	}))
 	defer ts.Close()
 	expected := map[string]tsuruHealer{
-		"bootstrap": tsuruHealer{url: "/bootstrap"},
+		"bootstrap": {url: "/bootstrap"},
 	}
 	healers, err := healersFromResource(ts.URL)
 	c.Assert(err, IsNil)

@@ -22,6 +22,7 @@ var healers = make(map[string]healer)
 func register(name string, h healer) {
 	mut.Lock()
 	defer mut.Unlock()
+	log.Info(fmt.Sprintf("registering %s healer", name))
 	healers[name] = h
 }
 
@@ -46,6 +47,7 @@ type tsuruHealer struct {
 }
 
 func (h *tsuruHealer) heal() error {
+	log.Info(fmt.Sprintf("healing tsuru healer with endpoint %s...", h.url))
 	_, err := request("GET", h.url, "", nil)
 	return err
 }
