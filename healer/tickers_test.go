@@ -27,3 +27,22 @@ func (s *S) TestHealTicker(c *C) {
 	<-ok
 	c.Assert(called, Equals, true)
 }
+
+func (s *S) TestRegisterTicker(c *C) {
+	var called bool
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		called = true
+	}))
+	defer ts.Close()
+	ch := make(chan time.Time)
+	ok := make(chan bool)
+	go func() {
+		registerTicker(ch, ts.URL)
+		ok <- true
+	}()
+	ch <- time.Now()
+	time.Sleep(1 * time.Millisecond)
+	close(ch)
+	<-ok
+	c.Assert(called, Equals, true)
+}
