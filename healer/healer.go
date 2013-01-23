@@ -168,7 +168,7 @@ func healersFromResource(endpoint string) (map[string]tsuruHealer, error) {
 		return nil, err
 	}
 	for name, url := range data {
-		h[name] = tsuruHealer{url: url}
+		h[name] = tsuruHealer{url: fmt.Sprintf("%s%s", endpoint, url)}
 	}
 	return h, nil
 }

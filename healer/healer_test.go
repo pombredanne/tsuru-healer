@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/flaviamissi/go-elb/aws"
 	"github.com/flaviamissi/go-elb/elb"
 	. "launchpad.net/gocheck"
@@ -86,7 +87,7 @@ func (s *S) TestHealersFromResource(c *C) {
 	}))
 	defer ts.Close()
 	expected := map[string]tsuruHealer{
-		"bootstrap": {url: "/bootstrap"},
+		"bootstrap": {url: fmt.Sprintf("%s/bootstrap", ts.URL)},
 	}
 	healers, err := healersFromResource(ts.URL)
 	c.Assert(err, IsNil)
