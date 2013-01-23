@@ -38,17 +38,14 @@ def send():
     put(os.path.join(current_dir, "dist.tar.gz"), env.healer_path)
 
 
-def start(email, password, endpoint, access, secret):
+def restart():
     with cd(env.healer_path):
         run("tar -xzf dist.tar.gz")
-    cmd = "AWS_ACCESS_KEY_ID={0} AWS_SECRET_ACCESS_KEY={1} "
-    "nohup {2}/dist/healer {3} {4} {5} >& ./tsuru-healer.out &".format(access, secret, env.healer_path, email, password, endpoint)
-    run(cmd, pty=False)
+    run('circusctl restart healer')
 
 
 def deploy(email, password, endpoint, access, secret):
     build()
     send()
-    stop()
-    start(email, password, endpoint, access, secret)
+    restart()
     clean()
