@@ -44,7 +44,7 @@ def restart():
     run('circusctl restart healer')
 
 
-def deploy(email, password, endpoint, access, secret):
+def deploy():
     build()
     send()
     restart()
