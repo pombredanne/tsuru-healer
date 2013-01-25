@@ -17,11 +17,11 @@ func main() {
 		fmt.Println("Healer expects email, password and endpoint to connect with tsuru.")
 		return
 	}
-	email := os.Args[1]
-	password := os.Args[2]
+	// email := os.Args[1]
+	// password := os.Args[2]
 	endpoint := os.Args[3]
-	healer := newInstanceHealer(email, password, endpoint)
-	register("instance-healer", healer)
+	// healer := newInstanceHealer(email, password, endpoint)
+	// register("instance-healer", healer)
 	registerTicker(time.Tick(time.Minute), endpoint)
 	healTicker(time.Tick(time.Minute))
 }
