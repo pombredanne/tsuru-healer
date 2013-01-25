@@ -13,11 +13,14 @@ import (
 )
 
 var (
-	log *syslog.Writer
-	mut sync.Mutex
+	log     *syslog.Writer
+	mut     sync.Mutex
+	healers = make(map[string]healer)
 )
 
-var healers = make(map[string]healer)
+type healer interface {
+	heal() error
+}
 
 func register(name string, h healer) {
 	mut.Lock()
@@ -32,16 +35,6 @@ func getHealers() map[string]healer {
 	return healers
 }
 
-type healer interface {
-	heal() error
-}
-
-type instanceHealer struct {
-	endpoint string
-	seeker   seeker
-	token    string
-}
-
 type tsuruHealer struct {
 	url string
 }
@@ -50,6 +43,24 @@ func (h *tsuruHealer) heal() error {
 	log.Info(fmt.Sprintf("healing tsuru healer with endpoint %s...", h.url))
 	_, err := request("GET", h.url, "", nil)
 	return err
+}
+
+type instanceHealer struct {
+	endpoint string
+	seeker   seeker
+	token    string
+}
+
+func newInstanceHealer(email, password, endpoint string) *instanceHealer {
+	token, err := getToken(email, password, endpoint)
+	if err != nil {
+		panic(err)
+	}
+	return &instanceHealer{
+		seeker:   newAWSSeeker(),
+		endpoint: endpoint,
+		token:    token,
+	}
 }
 
 // Heal iterates through down instances, terminate then
@@ -71,30 +82,6 @@ func (h *instanceHealer) heal() error {
 		}
 	}
 	return nil
-}
-
-func getToken(email, password, endpoint string) (string, error) {
-	url := fmt.Sprintf("%s/users/%s/tokens", endpoint, email)
-	b := fmt.Sprintf(`{"password": "%s"}`, password)
-	body := bytes.NewBufferString(b)
-	resp, err := http.Post(url, "application/json", body)
-	if err != nil {
-		return "", err
-	}
-	if resp.StatusCode != 200 {
-		return "", fmt.Errorf("Error obtaining token: %s", resp.Status)
-	}
-	respBody, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-	var token map[string]string
-	json.Unmarshal(respBody, &token)
-	if _, ok := token["token"]; !ok {
-		return "", errors.New("Unknown response format.")
-	}
-	return token["token"], nil
 }
 
 // Calls tsuru add-unit endpoint
@@ -125,31 +112,6 @@ func (h *instanceHealer) terminate(lb, id string) error {
 	return nil
 }
 
-func request(method, url, token string, body io.Reader) (*http.Response, error) {
-	request, err := http.NewRequest(method, url, body)
-	if err != nil {
-		return nil, err
-	}
-	request.Header.Add("Authorization", token)
-	resp, err := (&http.Client{}).Do(request)
-	if err != nil {
-		return nil, err
-	}
-	return resp, nil
-}
-
-func newInstanceHealer(email, password, endpoint string) *instanceHealer {
-	token, err := getToken(email, password, endpoint)
-	if err != nil {
-		panic(err.Error())
-	}
-	return &instanceHealer{
-		seeker:   newAWSSeeker(),
-		endpoint: endpoint,
-		token:    token,
-	}
-}
-
 // healersFromResource returns healers registered in tsuru.
 func healersFromResource(endpoint string) (map[string]tsuruHealer, error) {
 	url := fmt.Sprintf("%s/healers", endpoint)
@@ -171,4 +133,41 @@ func healersFromResource(endpoint string) (map[string]tsuruHealer, error) {
 		h[name] = tsuruHealer{url: fmt.Sprintf("%s%s", endpoint, url)}
 	}
 	return h, nil
+}
+
+func getToken(email, password, endpoint string) (string, error) {
+	url := fmt.Sprintf("%s/users/%s/tokens", endpoint, email)
+	b := fmt.Sprintf(`{"password": "%s"}`, password)
+	body := bytes.NewBufferString(b)
+	resp, err := http.Post(url, "application/json", body)
+	if err != nil {
+		return "", err
+	}
+	if resp.StatusCode != 200 {
+		return "", fmt.Errorf("Error obtaining token: %s", resp.Status)
+	}
+	respBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	var token map[string]string
+	json.Unmarshal(respBody, &token)
+	if _, ok := token["token"]; !ok {
+		return "", errors.New("Unknown response format.")
+	}
+	return token["token"], nil
+}
+
+func request(method, url, token string, body io.Reader) (*http.Response, error) {
+	request, err := http.NewRequest(method, url, body)
+	if err != nil {
+		return nil, err
+	}
+	request.Header.Add("Authorization", token)
+	resp, err := (&http.Client{}).Do(request)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
 }
