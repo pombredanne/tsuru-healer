@@ -22,6 +22,6 @@ func main() {
 	endpoint := os.Args[3]
 	// healer := newInstanceHealer(email, password, endpoint)
 	// register("instance-healer", healer)
-	registerTicker(time.Tick(time.Minute * 15), endpoint)
+	registerTicker(time.Tick(time.Minute*15), endpoint)
 	healTicker(time.Tick(time.Minute))
 }
