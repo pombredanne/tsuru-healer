@@ -18,7 +18,7 @@ func healTicker(ticker <-chan time.Time) {
 			go func(healer healer) {
 				err := healer.heal()
 				if err != nil {
-					log.Info(err)
+					log.Info(err.Error())
 				}
 				wg.Done()
 			}(h)
