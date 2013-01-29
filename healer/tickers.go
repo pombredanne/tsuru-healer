@@ -16,7 +16,10 @@ func healTicker(ticker <-chan time.Time) {
 		for name, h := range healers {
 			log.Info(fmt.Sprintf("running verification/heal for %s", name))
 			go func(healer healer) {
-				healer.heal()
+				err := healer.heal()
+				if err != nil {
+					log.Info(err)
+				}
 				wg.Done()
 			}(h)
 		}
