@@ -120,6 +120,7 @@ func healersFromResource(endpoint string) (map[string]tsuruHealer, error) {
 		return nil, err
 	}
 	body, err := ioutil.ReadAll(response.Body)
+	defer response.Body.Close()
 	if err != nil {
 		return nil, err
 	}
@@ -147,10 +148,10 @@ func getToken(email, password, endpoint string) (string, error) {
 		return "", fmt.Errorf("Error obtaining token: %s", resp.Status)
 	}
 	respBody, err := ioutil.ReadAll(resp.Body)
+	defer resp.Body.Close()
 	if err != nil {
 		return "", err
 	}
-	defer resp.Body.Close()
 	var token map[string]string
 	json.Unmarshal(respBody, &token)
 	if _, ok := token["token"]; !ok {
