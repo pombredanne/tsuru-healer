@@ -20,13 +20,6 @@ type healer struct {
 	url string
 }
 
-func register(name string, h *healer) {
-	mut.Lock()
-	defer mut.Unlock()
-	log.Info(fmt.Sprintf("registering %s healer", name))
-	healers[name] = h
-}
-
 func setHealers(h map[string]*healer) {
 	mut.Lock()
 	healers = h

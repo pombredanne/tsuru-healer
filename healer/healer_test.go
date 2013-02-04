@@ -34,9 +34,9 @@ func (s *S) TestTsuruHealer(c *C) {
 	c.Assert(called, Equals, true)
 }
 
-func (s *S) TestRegisterAndGetHealers(c *C) {
+func (s *S) TestSetAndGetHealers(c *C) {
 	h := &healer{url: ""}
-	register("test-healer", h)
+	setHealers(map[string]*healer{"test-healer": h})
 	healers := getHealers()
 	healer, ok := healers["test-healer"]
 	c.Assert(healer, DeepEquals, h)
