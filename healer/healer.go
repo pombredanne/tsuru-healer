@@ -27,6 +27,12 @@ func register(name string, h *healer) {
 	healers[name] = h
 }
 
+func setHealers(h map[string]*healer) {
+	mut.Lock()
+	healers = h
+	mut.Unlock()
+}
+
 func getHealers() map[string]*healer {
 	mut.Lock()
 	defer mut.Unlock()

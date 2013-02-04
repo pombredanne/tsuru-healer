@@ -31,10 +31,8 @@ func healTicker(ticker <-chan time.Time) {
 func registerTicker(ticker <-chan time.Time, endpoint string) {
 	var registerHealer = func() {
 		log.Info("running register ticker")
-		healers, _ := healersFromResource(endpoint)
-		for name, healer := range healers {
-			copy := *healer
-			register(name, &copy)
+		if healers, err := healersFromResource(endpoint); err == nil {
+			setHealers(healers)
 		}
 	}
 	registerHealer()
