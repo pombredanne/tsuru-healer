@@ -15,7 +15,7 @@ func healTicker(ticker <-chan time.Time) {
 		wg.Add(len(healers))
 		for name, h := range healers {
 			log.Info(fmt.Sprintf("running verification/heal for %s", name))
-			go func(healer healer) {
+			go func(healer *healer) {
 				err := healer.heal()
 				if err != nil {
 					log.Info(err.Error())
@@ -33,7 +33,7 @@ func registerTicker(ticker <-chan time.Time, endpoint string) {
 		log.Info("running register ticker")
 		healers, _ := healersFromResource(endpoint)
 		for name, healer := range healers {
-			copy := healer
+			copy := *healer
 			register(name, &copy)
 		}
 	}

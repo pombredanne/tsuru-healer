@@ -14,7 +14,7 @@ func (s *S) TestHealTicker(c *C) {
 		atomic.StoreInt32(&called, 1)
 	}))
 	defer ts.Close()
-	h := &tsuruHealer{url: ts.URL}
+	h := &healer{url: ts.URL}
 	register("ticker-healer", h)
 	ch := make(chan time.Time)
 	ok := make(chan bool)

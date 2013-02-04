@@ -13,38 +13,34 @@ import (
 var (
 	log     *syslog.Writer
 	mut     sync.Mutex
-	healers = make(map[string]healer)
+	healers = make(map[string]*healer)
 )
 
-type healer interface {
-	heal() error
+type healer struct {
+	url string
 }
 
-func register(name string, h healer) {
+func register(name string, h *healer) {
 	mut.Lock()
 	defer mut.Unlock()
 	log.Info(fmt.Sprintf("registering %s healer", name))
 	healers[name] = h
 }
 
-func getHealers() map[string]healer {
+func getHealers() map[string]*healer {
 	mut.Lock()
 	defer mut.Unlock()
 	return healers
 }
 
-type tsuruHealer struct {
-	url string
-}
-
-func (h *tsuruHealer) heal() error {
+func (h *healer) heal() error {
 	log.Info(fmt.Sprintf("healing tsuru healer with endpoint %s...", h.url))
 	_, err := request("GET", h.url, nil)
 	return err
 }
 
 // healersFromResource returns healers registered in tsuru.
-func healersFromResource(endpoint string) (map[string]tsuruHealer, error) {
+func healersFromResource(endpoint string) (map[string]*healer, error) {
 	url := fmt.Sprintf("%s/healers", endpoint)
 	response, err := request("GET", url, nil)
 	if err != nil {
@@ -55,14 +51,15 @@ func healersFromResource(endpoint string) (map[string]tsuruHealer, error) {
 	if err != nil {
 		return nil, err
 	}
-	h := map[string]tsuruHealer{}
+	var h map[string]*healer
 	data := map[string]string{}
 	err = json.Unmarshal(body, &data)
 	if err != nil {
 		return nil, err
 	}
+	h = make(map[string]*healer, len(data))
 	for name, url := range data {
-		h[name] = tsuruHealer{url: fmt.Sprintf("%s%s", endpoint, url)}
+		h[name] = &healer{url: fmt.Sprintf("%s%s", endpoint, url)}
 	}
 	return h, nil
 }
