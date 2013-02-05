@@ -13,15 +13,11 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	if len(os.Args) < 3 {
-		fmt.Println("Healer expects email, password and endpoint to connect with tsuru.")
+	if len(os.Args) < 1 {
+		fmt.Println("Healer expects the endpoint to connect with tsuru.")
 		return
 	}
-	// email := os.Args[1]
-	// password := os.Args[2]
-	endpoint := os.Args[3]
-	// healer := newInstanceHealer(email, password, endpoint)
-	// register("instance-healer", healer)
+	endpoint := os.Args[1]
 	registerTicker(time.Tick(time.Minute*15), endpoint)
 	healTicker(time.Tick(time.Minute))
 }
