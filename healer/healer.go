@@ -34,7 +34,8 @@ func getHealers() map[string]*healer {
 
 func (h *healer) heal() error {
 	log.Info(fmt.Sprintf("healing tsuru healer with endpoint %s...", h.url))
-	_, err := request("GET", h.url, nil)
+	r, err := request("GET", h.url, nil)
+	r.Body.Close()
 	return err
 }
 
@@ -46,7 +47,7 @@ func healersFromResource(endpoint string) (map[string]*healer, error) {
 		return nil, err
 	}
 	body, err := ioutil.ReadAll(response.Body)
-	defer response.Body.Close()
+	response.Body.Close()
 	if err != nil {
 		return nil, err
 	}
