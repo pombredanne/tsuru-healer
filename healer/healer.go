@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log/syslog"
 	"net/http"
+	"os"
 	"sync"
 )
 
@@ -70,6 +71,9 @@ func request(method, url string, body io.Reader) (*http.Response, error) {
 	request, err := http.NewRequest(method, url, body)
 	if err != nil {
 		return nil, err
+	}
+	if token := os.Getenv("TSURU_TOKEN"); token != "" {
+		request.Header.Add("Authorization", token)
 	}
 	resp, err := (&http.Client{}).Do(request)
 	if err != nil {
