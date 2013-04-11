@@ -74,6 +74,7 @@ func request(method, url string, body io.Reader) (*http.Response, error) {
 	}
 	if token := os.Getenv("TSURU_TOKEN"); token != "" {
 		request.Header.Add("Authorization", token)
+		request.Header.Add("Token-Owner", os.Getenv("TSURU_TOKEN_OWNER"))
 	}
 	resp, err := (&http.Client{}).Do(request)
 	if err != nil {
