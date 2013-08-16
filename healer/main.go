@@ -13,7 +13,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	if len(os.Args) < 1 {
+	if len(os.Args) <= 1 {
 		fmt.Println("Healer expects the endpoint to connect with tsuru.")
 		return
 	}
